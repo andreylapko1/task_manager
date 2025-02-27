@@ -8,7 +8,6 @@ class SubTaskSerializer(serializers.ModelSerializer):
         model = SubTask
         fields = '__all__'
 
-
 class TaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task

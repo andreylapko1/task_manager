@@ -8,19 +8,18 @@ from task_manager_app.serializer import TaskSerializer, CreateTaskSerializer
 
 
 
-@api_view(['POST'])
-def task_create(request):
-    task = CreateTaskSerializer(data=request.data)
-    if task.is_valid():
-        task.save()
-        return Response(task.data, status=status.HTTP_201_CREATED)
-    return Response(task.errors, status=status.HTTP_400_BAD_REQUEST)
-
-@api_view(['GET'])
+@api_view(['GET','POST'])
 def get_task_list(request):
-    tasks = Task.objects.all()
-    serializer = TaskSerializer(tasks, many=True)
-    return Response(serializer.data)
+    if request.method == 'GET':
+        tasks = Task.objects.all()
+        serializer = TaskSerializer(tasks, many=True)
+        return Response(serializer.data)
+    elif request.method == 'POST':
+        task = CreateTaskSerializer(data=request.data)
+        if task.is_valid():
+            task.save()
+            return Response(task.data, status=status.HTTP_201_CREATED)
+        return Response(task.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET'])
