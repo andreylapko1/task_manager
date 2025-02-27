@@ -30,7 +30,7 @@ class SubTask(models.Model):
     ]
     title = models.CharField(max_length=100)
     description = models.TextField(default=None)
-    task = models.ForeignKey('Task', on_delete=models.CASCADE)
+    task = models.ForeignKey('Task', on_delete=models.CASCADE, related_name='subtasks')
     status =models.CharField(max_length=100, choices=STATUS_CHOICES, default='new')
     deadline = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
