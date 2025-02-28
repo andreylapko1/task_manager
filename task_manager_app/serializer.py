@@ -12,11 +12,19 @@ class SubTaskSerializer(serializers.ModelSerializer):
 
 
 class TaskDetailSerializer(serializers.ModelSerializer):
-    subtasks = SubTaskSerializer(many=True, read_only=True)
+    # subtasks = SubTaskSerializer(many=True, read_only=True)
     class Meta:
         model = Task
         fields = '__all__'
 
+
+
+
+class TaskDetailSubTaskStatusSerializer(serializers.ModelSerializer):
+    subtasks = SubTaskSerializer(many=True, read_only=True)
+    class Meta:
+        model = Task
+        fields = '__all__'
 
 
 class CategoryCreateSerializer(serializers.ModelSerializer):
