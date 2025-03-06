@@ -11,11 +11,6 @@ from task_manager_app.serializer import TaskSerializer, CreateTaskSerializer, Ta
 from rest_framework.pagination import PageNumberPagination
 
 
-# Реализуйте фильтрацию, поиск и сортировку:
-# Реализуйте фильтрацию по полям status и deadline.
-# Реализуйте поиск по полям title и description.
-# Добавьте сортировку по полю created_at.
-
 
 class SubTaskListCreateView(ListCreateAPIView):
     queryset = SubTask.objects.all()
