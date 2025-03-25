@@ -1,4 +1,7 @@
 from django.db import models
+from django.utils import timezone
+
+from task_manager_app.managers import SoftDeleteManager
 
 
 class Task(models.Model):
@@ -10,6 +13,7 @@ class Task(models.Model):
         ('done', 'Done'),
     ]
     title = models.CharField(max_length=100)
+    category = models.ForeignKey('Category', default=None, null=True, on_delete=models.SET_NULL)
     description = models.TextField(default=None)
     categories = models.ManyToManyField('Category', related_name='tasks', blank=True)
     status = models.CharField(max_length=100,choices=STATUS_CHOICES, default='new')
@@ -40,9 +44,19 @@ class SubTask(models.Model):
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
+    is_deleted = models.BooleanField(default=False)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+
+    objects = SoftDeleteManager()
 
     def __str__(self):
         return self.name
+
+    def delete(self, *args, **kwargs):
+        self.is_deleted = True
+        self.deleted_at = timezone.now()
+        self.save()
+
 
 
 

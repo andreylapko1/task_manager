@@ -1,5 +1,11 @@
 from django.urls import path, include
 from . import views
+from rest_framework.routers import DefaultRouter
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
+router = DefaultRouter()
+router.register('category', views.CategoryViewSet)
+
 
 urlpatterns = [
 
@@ -10,4 +16,7 @@ urlpatterns = [
     path('task_count/', views.TaskCountView.as_view(), name='get_task_count'),
     path('status/<str:stat>', views.TaskCountView.as_view(), name='count_task_by_status'),
     path('overdue_task/', views.TaskOverdueCountView.as_view(), name='count_overdue_tasks'),
+    path('', include(router.urls), name='count_task'),
+    path('token-obtain/', TokenObtainPairView.as_view(), name='token_obtain'),
+    path('token-refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]

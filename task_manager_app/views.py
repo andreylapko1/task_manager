@@ -1,13 +1,15 @@
+from django.db.models import Count
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import status, filters
-from rest_framework.decorators import api_view
+from rest_framework import status, filters, viewsets
+from rest_framework.decorators import api_view, action
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from task_manager_app.models import Task, SubTask
-from task_manager_app.serializer import TaskSerializer, CreateTaskSerializer, TaskDetailSerializer, SubTaskSerializer
+from task_manager_app.models import Task, SubTask, Category
+from task_manager_app.serializer import TaskSerializer, CreateTaskSerializer, TaskDetailSerializer, SubTaskSerializer, \
+    CategoryCreateSerializer
 from rest_framework.pagination import PageNumberPagination
 
 
@@ -122,6 +124,19 @@ class TaskOverdueCountView(APIView):
         return Response({'Count overdue task': count, 'Overdue tasks': f'{overdue_task_list}'}, status=status.HTTP_200_OK)
 
 
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategoryCreateSerializer
 
+    @action(detail=False, methods=['GET'])
+    def count_tasks(self, request):
+        categories = Category.objects.annotate(tasks_count=Count('tasks'))
+        response = []
+        for category in categories:
+            response.append({
+                'id': category.pk,
+                'title': category.name,
+                'tasks_count': category.tasks_count
+            })
+        return Response(response)
 
-# Create your views here.
