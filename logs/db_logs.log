@@ -118,3 +118,16 @@
             WHERE type in ('table', 'view') AND NOT name='sqlite_sequence'
             ORDER BY name; args=None; alias=default
 (0.000) SELECT "django_migrations"."id", "django_migrations"."app", "django_migrations"."name", "django_migrations"."applied" FROM "django_migrations"; args=(); alias=default
+(0.000) 
+            SELECT name, type FROM sqlite_master
+            WHERE type in ('table', 'view') AND NOT name='sqlite_sequence'
+            ORDER BY name; args=None; alias=default
+(0.000) SELECT "django_migrations"."id", "django_migrations"."app", "django_migrations"."name", "django_migrations"."applied" FROM "django_migrations"; args=(); alias=default
+(0.000) 
+            SELECT name, type FROM sqlite_master
+            WHERE type in ('table', 'view') AND NOT name='sqlite_sequence'
+            ORDER BY name; args=None; alias=default
+(0.000) SELECT "django_migrations"."id", "django_migrations"."app", "django_migrations"."name", "django_migrations"."applied" FROM "django_migrations"; args=(); alias=default
+(0.000) SELECT 1 AS "a" FROM "auth_user" WHERE "auth_user"."username" = 'user_form' LIMIT 1; args=(1, 'user_form'); alias=default
+(0.000) INSERT INTO "auth_user" ("password", "last_login", "is_superuser", "username", "first_name", "last_name", "email", "is_staff", "is_active", "date_joined") VALUES ('pbkdf2_sha256$870000$PR6634xYpnmD053ZRLtv9a$er9f+LewKqCduTrfWCdAMXaZP1G6cqeIaBK2b4AYcdY=', NULL, 0, 'user_form', '', '', 'user_form@gmail.com', 0, 1, '2025-03-25 21:17:27.576729') RETURNING "auth_user"."id"; args=('pbkdf2_sha256$870000$PR6634xYpnmD053ZRLtv9a$er9f+LewKqCduTrfWCdAMXaZP1G6cqeIaBK2b4AYcdY=', None, False, 'user_form', '', '', 'user_form@gmail.com', False, True, '2025-03-25 21:17:27.576729'); alias=default
+(0.000) SELECT "auth_user"."id", "auth_user"."password", "auth_user"."last_login", "auth_user"."is_superuser", "auth_user"."username", "auth_user"."first_name", "auth_user"."last_name", "auth_user"."email", "auth_user"."is_staff", "auth_user"."is_active", "auth_user"."date_joined" FROM "auth_user" WHERE "auth_user"."username" = 'user_form' LIMIT 21; args=('user_form',); alias=default
