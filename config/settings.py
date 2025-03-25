@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -125,11 +126,20 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+SIMPLE_JWT = {
+ 'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+ 'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+}
+
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 6 ,
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
 }
+
 
 LOG_DIR = os.path.join(BASE_DIR, 'logs')
 
@@ -157,11 +167,11 @@ LOGGING = {
     },
     'loggers': {
         'django': {
-            'handlers': ['console', 'http_file'],
+            'handlers': [ 'http_file'],
             'level': 'DEBUG',
         },
         'django.db.backends': {
-            'handlers': ['console', 'db_file'],
+            'handlers': [ 'db_file'],
             'level': 'DEBUG',
         },
         'django.request': {

@@ -1,5 +1,6 @@
 from django.utils import timezone
 from rest_framework import serializers
+# from rest_framework.authtoken.admin import User
 from rest_framework.response import Response
 
 from .models import Task, Category
@@ -71,3 +72,19 @@ class CreateSubTaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = SubTask
         fields = ['title', 'task' ,'description', 'status', 'deadline']
+
+# class UserRegistrationSerializer(serializers.ModelSerializer):
+#     password = serializers.CharField(write_only=True)
+#
+#     class Meta:
+#         model = User
+#         fields = ['username', 'email', 'password']
+#
+#     def create(self, validated_data):
+#         user = User(
+#             username=validated_data['username'],
+#             email=validated_data['email']
+#         )
+#         user.set_password(validated_data['password'])#Хэш
+#         user.save()
+#         return user

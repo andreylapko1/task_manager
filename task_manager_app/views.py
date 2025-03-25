@@ -4,9 +4,12 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, filters, viewsets
 from rest_framework.decorators import api_view, action
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
+from rest_framework.reverse import reverse_lazy
 from rest_framework.views import APIView
 
+from task_manager_app.forms import UserRegisterForm
 from task_manager_app.models import Task, SubTask, Category
 from task_manager_app.serializer import TaskSerializer, CreateTaskSerializer, TaskDetailSerializer, SubTaskSerializer, \
     CategoryCreateSerializer
@@ -15,6 +18,7 @@ from rest_framework.pagination import PageNumberPagination
 
 
 class SubTaskListCreateView(ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = SubTask.objects.all()
     serializer_class = SubTaskSerializer
 
@@ -38,11 +42,13 @@ class SubTaskListCreateView(ListCreateAPIView):
 
 
 class SubTaskDetailUpdateDeleteView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = SubTask.objects.all()
     serializer_class = SubTaskSerializer
 
 
 class TaskListCreateView(ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = Task.objects.all()
     pagination_class = PageNumberPagination
     page_size = 5
@@ -92,11 +98,13 @@ class TaskListCreateView(ListCreateAPIView):
 
 
 class TaskDetailCreateUpdateDeleteView(RetrieveUpdateDestroyAPIView ):
+    permission_classes = [IsAdminUser]
     queryset = Task.objects.all()
     serializer_class = TaskDetailSerializer
 
 
 class TaskCountView(APIView):
+    permission_classes = [IsAdminUser]
 
     def get(self, request, stat=None):
         if stat is None:
@@ -113,6 +121,7 @@ class TaskCountView(APIView):
             return Response(serializer.data)
 
 class TaskOverdueCountView(APIView):
+    permission_classes = [IsAdminUser]
     def get(self, request):
         count = 0
         overdue_task_list = []
@@ -125,6 +134,7 @@ class TaskOverdueCountView(APIView):
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
     queryset = Category.objects.all()
     serializer_class = CategoryCreateSerializer
 
@@ -140,3 +150,13 @@ class CategoryViewSet(viewsets.ModelViewSet):
             })
         return Response(response)
 
+
+# class UserRegistrationViewSet(viewsets.ModelViewSet):
+#     serializer_class = UserRegistrationSerializer
+#
+#     def create(self, request, *args, **kwargs):
+#         serializer = self.get_serializer(data=request.data)
+#         if serializer.is_valid():
+#             user = serializer.save()
+#             return Response({'username': user.username, 'email': user.email}, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
