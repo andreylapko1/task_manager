@@ -8,6 +8,10 @@ from .models import Task, Category
 from .models import SubTask
 
 class SubTaskSerializer(serializers.ModelSerializer):
+    owner = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True,
+    )
     class Meta:
         model = SubTask
         fields = '__all__'
@@ -15,6 +19,10 @@ class SubTaskSerializer(serializers.ModelSerializer):
 
 class TaskDetailSerializer(serializers.ModelSerializer):
     # subtasks = SubTaskSerializer(many=True, read_only=True)
+    owner = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True,
+    )
     class Meta:
         model = Task
         fields = '__all__'
@@ -53,6 +61,10 @@ class SubTaskCreateSerializer(serializers.ModelSerializer):
         read_only_fields = ('created_at ',)
 
 class TaskSerializer(serializers.ModelSerializer):
+    owner = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True,
+    )
     class Meta:
         model = Task
         fields = '__all__'
@@ -91,3 +103,4 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])#Хэш
         user.save()
         return user
+

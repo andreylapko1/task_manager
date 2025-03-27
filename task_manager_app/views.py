@@ -3,7 +3,7 @@ from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, filters, viewsets
 from rest_framework.decorators import api_view, action
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.reverse import reverse_lazy
@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 
 from task_manager_app.forms import UserRegisterForm
 from task_manager_app.models import Task, SubTask, Category
+from task_manager_app.permissions import IsUserAuthor
 from task_manager_app.serializer import TaskSerializer, CreateTaskSerializer, TaskDetailSerializer, SubTaskSerializer, \
     CategoryCreateSerializer, UserRegistrationSerializer
 from rest_framework.pagination import PageNumberPagination
@@ -39,10 +40,22 @@ class SubTaskListCreateView(ListCreateAPIView):
         'created_at',
     ]
 
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+
+class UserTaskList(ListAPIView):
+    serializer_class = TaskSerializer
+    permission_classes = [IsAuthenticated]
+
+
+    def get_queryset(self):
+        return Task.objects.filter(owner=self.request.user)
+
 
 
 class SubTaskDetailUpdateDeleteView(RetrieveUpdateDestroyAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsUserAuthor]
     queryset = SubTask.objects.all()
     serializer_class = SubTaskSerializer
 
@@ -96,9 +109,12 @@ class TaskListCreateView(ListCreateAPIView):
         return queryset.order_by('pk')
 
 
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
 
 class TaskDetailCreateUpdateDeleteView(RetrieveUpdateDestroyAPIView ):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticated, IsUserAuthor]
     queryset = Task.objects.all()
     serializer_class = TaskDetailSerializer
 
