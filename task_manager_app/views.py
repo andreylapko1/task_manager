@@ -84,7 +84,7 @@ class SubTaskDetailUpdateDeleteView(RetrieveUpdateDestroyAPIView):
 
 
 class TaskListCreateView(ListCreateAPIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     queryset = Task.objects.all()
     pagination_class = PageNumberPagination
     page_size = 5
@@ -137,7 +137,7 @@ class TaskListCreateView(ListCreateAPIView):
 
 
 class TaskDetailCreateUpdateDeleteView(RetrieveUpdateDestroyAPIView ):
-    permission_classes = [IsAuthenticated, IsUserAuthor]
+    # permission_classes = [IsAuthenticated, IsUserAuthor]
     queryset = Task.objects.all()
     serializer_class = TaskDetailSerializer
 
