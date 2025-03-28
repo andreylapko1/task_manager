@@ -1,8 +1,11 @@
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
+# from django.contrib.auth.models import User
 from django.utils import timezone
 from rest_framework import serializers
 
 from rest_framework.response import Response
+from rest_framework.validators import UniqueValidator
 
 from .models import Task, Category
 from .models import SubTask
@@ -89,18 +92,32 @@ class CreateSubTaskSerializer(serializers.ModelSerializer):
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
+    username = serializers.CharField(required=True)
+    password = serializers.CharField(required=True, write_only=True)
+    password_repeat = serializers.CharField(required=True, write_only=True)
+    email = serializers.EmailField(required=True, validators=[UniqueValidator(queryset=User.objects.all())])
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password']
+        fields = ['username', 'password','password_repeat', 'email']
 
-    def create(self, validated_data):
-        user = User(
-            username=validated_data['username'],
-            email=validated_data['email']
-        )
-        user.set_password(validated_data['password'])#Хэш
-        user.save()
-        return user
+    def validate(self, data):
+        if data['password'] != data['password_repeat']:
+            raise serializers.ValidationError({"repeat_password": "Passwords do not match"})
+        data.pop('password_repeat')
+        return data
+
+    def validate_username(self, value):
+        if not value.isalnum():
+            raise serializers.ValidationError({"username": "Username must be alphanumeric"})
+        return value
+
+
+
+
+
+
+
+
+
 
