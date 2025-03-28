@@ -19,8 +19,7 @@ from task_manager_app.serializer import TaskSerializer, CreateTaskSerializer, Ta
     CategoryCreateSerializer, UserRegistrationSerializer
 from rest_framework.pagination import PageNumberPagination
 
-
-
+from task_manager_app.utils import set_jwt_cookies
 
 
 @api_view(['POST'])
@@ -30,28 +29,7 @@ def login(request):
     password = request.data.get('password')
     user = authenticate(request, username=username, password=password)
     if user:
-        refresh_token = RefreshToken.for_user(user)
-        access_token = refresh_token.access_token
-        end_of_refresh = refresh_token['exp'] - timezone.now().timestamp()
-        end_of_access = access_token['exp'] - timezone.now().timestamp()
-        response = Response(status=status.HTTP_200_OK)
-        response.set_cookie(
-            key='refresh_token',
-            value=str(refresh_token),
-            httponly=True,
-            secure=False,
-            samesite='Lax',
-            max_age=end_of_refresh
-        )
-        response.set_cookie(
-            key='access_token',
-            value=str(access_token),
-            httponly=True,
-            secure=False,
-            samesite='Lax',
-            max_age=end_of_access
-        )
-        return response
+        set_jwt_cookies(user)
     return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(['GET'])
@@ -225,6 +203,6 @@ class UserRegistrationViewSet(viewsets.ModelViewSet):
             user = serializer.save()
             response = Response(
                 serializer.data, status=status.HTTP_201_CREATED)
-            # set_jwt_cookies(response, user)
+            set_jwt_cookies(user=user, response=response)
             return response
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
