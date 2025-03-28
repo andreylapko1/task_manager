@@ -3,7 +3,7 @@ from . import views
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from .views import UserRegistrationViewSet
+from .views import UserRegistrationViewSet, UserTaskList
 
 router = DefaultRouter()
 router.register('category', views.CategoryViewSet)
@@ -21,5 +21,7 @@ urlpatterns = [
     path('', include(router.urls), name='count_task'),
     path('token-obtain/', TokenObtainPairView.as_view(), name='token_obtain'),
     path('token-refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('register/', UserRegistrationViewSet.as_view({'post': 'create'}), name='register'),
+    path('user_tasks/', UserTaskList.as_view(), name='user_tasks_list'),
+    path('registration/', UserRegistrationViewSet.as_view({'post': 'create', 'get': 'list'}), name='registration'),
+
 ]

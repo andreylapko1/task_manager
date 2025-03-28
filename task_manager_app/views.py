@@ -1,19 +1,43 @@
+from django.contrib.auth import authenticate
+from django.contrib.auth.models import User
 from django.db.models import Count
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, filters, viewsets
-from rest_framework.decorators import api_view, action
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.decorators import api_view, action, permission_classes
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
+from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from rest_framework.response import Response
 from rest_framework.reverse import reverse_lazy
 from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from task_manager_app.forms import UserRegisterForm
 from task_manager_app.models import Task, SubTask, Category
+from task_manager_app.permissions import IsUserAuthor
 from task_manager_app.serializer import TaskSerializer, CreateTaskSerializer, TaskDetailSerializer, SubTaskSerializer, \
     CategoryCreateSerializer, UserRegistrationSerializer
 from rest_framework.pagination import PageNumberPagination
+
+from task_manager_app.utils import set_jwt_cookies
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def login(request):
+    username = request.data.get('username')
+    password = request.data.get('password')
+    user = authenticate(request, username=username, password=password)
+    if user:
+        set_jwt_cookies(user)
+    return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+@api_view(['GET'])
+def logout(request, *args, **kwargs):
+    response = Response(status=status.HTTP_200_OK)
+    response.delete_cookie('access_token')
+    response.delete_cookie('refresh_token')
+    return response
 
 
 
@@ -39,16 +63,28 @@ class SubTaskListCreateView(ListCreateAPIView):
         'created_at',
     ]
 
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+
+class UserTaskList(ListAPIView):
+    serializer_class = TaskSerializer
+    permission_classes = [IsAuthenticated]
+
+
+    def get_queryset(self):
+        return Task.objects.filter(owner=self.request.user)
+
 
 
 class SubTaskDetailUpdateDeleteView(RetrieveUpdateDestroyAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsUserAuthor]
     queryset = SubTask.objects.all()
     serializer_class = SubTaskSerializer
 
 
 class TaskListCreateView(ListCreateAPIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     queryset = Task.objects.all()
     pagination_class = PageNumberPagination
     page_size = 5
@@ -96,9 +132,12 @@ class TaskListCreateView(ListCreateAPIView):
         return queryset.order_by('pk')
 
 
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
 
 class TaskDetailCreateUpdateDeleteView(RetrieveUpdateDestroyAPIView ):
-    permission_classes = [IsAdminUser]
+    # permission_classes = [IsAuthenticated, IsUserAuthor]
     queryset = Task.objects.all()
     serializer_class = TaskDetailSerializer
 
@@ -151,12 +190,19 @@ class CategoryViewSet(viewsets.ModelViewSet):
         return Response(response)
 
 
+
+
 class UserRegistrationViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    permission_classes = [AllowAny]
     serializer_class = UserRegistrationSerializer
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+    def post(self, request, *args, **kwargs):
+        serializer = UserRegistrationSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-            return Response({'username': user.username, 'email': user.email}, status=status.HTTP_201_CREATED)
+            response = Response(
+                serializer.data, status=status.HTTP_201_CREATED)
+            set_jwt_cookies(user=user, response=response)
+            return response
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
