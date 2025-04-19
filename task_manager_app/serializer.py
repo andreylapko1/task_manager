@@ -27,10 +27,12 @@ class TaskDetailSubTaskStatusSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class CategoryCreateSerializer(serializers.ModelSerializer):
+class CategoryCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ['name']
+
+
 
     def create(self, validated_data):
         if Category.objects.filter(name=validated_data['name']).exists():
@@ -51,15 +53,19 @@ class SubTaskCreateSerializer(serializers.ModelSerializer):
         read_only_fields = ('created_at ',)
 
 class TaskSerializer(serializers.ModelSerializer):
+    categories = serializers.SerializerMethodField()
     class Meta:
         model = Task
         fields = '__all__'
+
+    def get_categories(self, obj):
+        return [category.name for category in obj.categories.all()]
 
 
 class CreateTaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
-        fields = ['title', 'description', 'status', 'deadline']
+        fields = ['title', 'categories' ,'description', 'status', 'deadline',]
 
     def validate_deadline(self, value):
         if value <= timezone.now():
@@ -71,3 +77,11 @@ class CreateSubTaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = SubTask
         fields = ['title', 'task' ,'description', 'status', 'deadline']
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = '__all__'
+
+

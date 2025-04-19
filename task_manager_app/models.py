@@ -16,6 +16,7 @@ class Task(models.Model):
     deadline = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+
     def __str__(self):
         return self.title
 
@@ -38,11 +39,22 @@ class SubTask(models.Model):
     def __str__(self):
         return self.title
 
+class ActiveCategoryManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(is_deleted=False)
+
+
 class Category(models.Model):
     name = models.CharField(max_length=100)
+    is_deleted = models.BooleanField(default=False)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+
+    objects = ActiveCategoryManager()
 
     def __str__(self):
         return self.name
+
+
 
 
 

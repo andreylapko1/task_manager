@@ -1,13 +1,16 @@
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import status, filters
-from rest_framework.decorators import api_view
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework import status, filters, viewsets
+from rest_framework.decorators import api_view, action
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView, UpdateAPIView
+from rest_framework.mixins import RetrieveModelMixin
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.viewsets import ModelViewSet, GenericViewSet
 
-from task_manager_app.models import Task, SubTask
-from task_manager_app.serializer import TaskSerializer, CreateTaskSerializer, TaskDetailSerializer, SubTaskSerializer
+from task_manager_app.models import Task, SubTask, Category
+from task_manager_app.serializer import TaskSerializer, CreateTaskSerializer, TaskDetailSerializer, SubTaskSerializer, \
+    CategorySerializer, CategoryCreateUpdateSerializer
 from rest_framework.pagination import PageNumberPagination
 
 
@@ -89,6 +92,9 @@ class TaskListCreateView(ListCreateAPIView):
 
 
 
+
+
+
 class TaskDetailCreateUpdateDeleteView(RetrieveUpdateDestroyAPIView ):
     queryset = Task.objects.all()
     serializer_class = TaskDetailSerializer
@@ -120,6 +126,45 @@ class TaskOverdueCountView(APIView):
                 overdue_task_list.append(task.title)
                 count += 1
         return Response({'Count overdue task': count, 'Overdue tasks': f'{overdue_task_list}'}, status=status.HTTP_200_OK)
+
+
+
+class CategoryViewSet(ModelViewSet, CreateAPIView):
+    serializer_class = CategorySerializer
+
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return CategoryCreateUpdateSerializer
+        if self.request.method == 'GET':
+            return CategorySerializer
+
+
+    def get_queryset(self):
+        return Category.objects.filter(is_deleted=False)
+
+
+
+
+class CategoryUpdateView(viewsets.ModelViewSet):
+    serializer_class = CategoryCreateUpdateSerializer
+
+    def get_queryset(self,  *args, **kwargs):
+        pk = self.kwargs.get('pk')
+        return Category.objects.filter(pk=pk)
+
+    def destroy(self, request, *args, **kwargs):
+        category = self.get_object()
+        category.is_deleted = True
+        category.deleted_at = timezone.now()
+        category.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=['get']) # Кнопки нет, но url работает
+    def count_tasks_by_category(self, request, pk):
+        category = self.get_object()
+        count = Task.objects.filter(categories=category).count()
+        return Response({'count': count})
 
 
 
